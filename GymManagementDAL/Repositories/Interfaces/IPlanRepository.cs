@@ -15,10 +15,10 @@ namespace GymManagementDAL.Repositories.Interfaces
         //Get By Id
         Plan? GetById(int id);
         //Add
-        int Add(Plan plan);
+       // int Add(Plan plan);
         //Update
         int Update(Plan plan);
         //Delete
-        int Delete(Plan plan);
+       // int Delete(Plan plan);
     }
 }
