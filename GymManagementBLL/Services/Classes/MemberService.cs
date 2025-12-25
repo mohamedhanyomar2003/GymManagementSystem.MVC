@@ -14,11 +14,21 @@ namespace GymManagementBLL.Services.Classes
     class MemberService : IMemberService
     {
         private readonly IGenericRepository<Member> _memberRepository;
+        private readonly IGenericRepository<MemberShip> _memberShipRepository;
+        private readonly IPlanRepository _planRepository;
 
-        public MemberService(IGenericRepository<Member> memberRepository)
+        // ASK CLR For Creating Objects From Service
+        //CLR will Inject Address Of Object In Constructor
+        public MemberService(IGenericRepository<Member> memberRepository,
+           IGenericRepository<MemberShip> memberShipRepository,
+           IPlanRepository planRepository)
         {
             _memberRepository = memberRepository;
+            _memberShipRepository = memberShipRepository;
+            _planRepository = planRepository;
         }
+
+
 
         public bool CreateMember(CreateMemberViewModel CreatedMember)
         {
@@ -60,7 +70,7 @@ namespace GymManagementBLL.Services.Classes
                 return _memberRepository.Add(member) > 0;
             }
 
-            catch(Exception)
+            catch (Exception)
             {
                 return false;
             }
@@ -80,6 +90,38 @@ namespace GymManagementBLL.Services.Classes
                 Photo = m.Photo
             });
             return memberViewModels;
+        }
+
+        public MemberViewModel? GetMemberDetails(int MemberId)
+        {
+            var Member = _memberRepository.GetById(MemberId);
+            if (Member is null) return null;
+            var ViewModel = new MemberViewModel()
+            {
+                Name = Member.Name,
+                Email = Member.Email,
+                Gender = Member.Gender.ToString(),
+                Phone = Member.Phone,
+                Photo = Member.Photo,
+                DateOfBirth = Member.DateOfBirth.ToShortDateString(),
+                Address = $"{Member.Address.BuildingNumber} - {Member.Address.Street} - {Member.Address.City}",
+
+            };
+
+            // Get Active Membership
+            var memberShipActive = _memberShipRepository.GetAll(X => X.MemberId == MemberId && X.Status == "Active")
+                .FirstOrDefault();
+
+            if (memberShipActive is not null)
+            {
+                ViewModel.MemberShipStartDate = memberShipActive.CreatedAt.ToShortDateString();
+                ViewModel.MemberShipEndDate = memberShipActive.EndDate.ToShortDateString();
+
+                var Plan = _planRepository.GetById(memberShipActive.PlanId);
+                ViewModel.PlanName = Plan?.Name;
+
+            }
+            return ViewModel;
         }
     }
 }
