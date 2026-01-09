@@ -16,16 +16,19 @@ namespace GymManagementBLL.Services.Classes
         private readonly IGenericRepository<Member> _memberRepository;
         private readonly IGenericRepository<MemberShip> _memberShipRepository;
         private readonly IPlanRepository _planRepository;
+        private readonly IGenericRepository<HealthRecord> healthRecordRepository;
 
         // ASK CLR For Creating Objects From Service
         //CLR will Inject Address Of Object In Constructor
         public MemberService(IGenericRepository<Member> memberRepository,
            IGenericRepository<MemberShip> memberShipRepository,
-           IPlanRepository planRepository)
+           IPlanRepository planRepository,
+           IGenericRepository<HealthRecord> healthRecordRepository)
         {
             _memberRepository = memberRepository;
             _memberShipRepository = memberShipRepository;
             _planRepository = planRepository;
+            this.healthRecordRepository = healthRecordRepository;
         }
 
 
@@ -122,6 +125,20 @@ namespace GymManagementBLL.Services.Classes
 
             }
             return ViewModel;
+        }
+
+        public HealthRecordViewModel? GetMemberHealthRecordDetails(int MemberId)
+        {
+            var memberHealthRecord = healthRecordRepository.GetById(MemberId);
+            if (memberHealthRecord is null) return null;
+            
+            return  new HealthRecordViewModel()
+            {
+                Height = memberHealthRecord.Height,
+                Weight = memberHealthRecord.Weight,
+                BloodType = memberHealthRecord.BloodType,
+                Note = memberHealthRecord.Note
+            };
         }
     }
 }
